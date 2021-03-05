@@ -57,6 +57,25 @@ export default {
         });
     },
 
+    list: async(req, res ) => {
+        try {
+            let files = await Storage.find({}).populate('user',{username:1});
+            //let amount = await User.countDocuments({}); 
+            
+            res.json({
+                status: 'success',
+                //msg: `Total files: ${amount}`,
+                msg: `Total files:`,
+                result: files
+            }); 
+        } catch (error) {
+            res.status(500).json({
+                status: 'danger',
+                msg: error
+            });
+        }
+    },
+
     delete: async(req, res) => {
         try {
             let _id = req.params.id;
@@ -94,8 +113,34 @@ export default {
 
     },
 
-    download: (req, res ) => {
+    download: async(req, res ) => {
+        try {
+            
+            let _id =req.params.id;
+            let file = await Storage.findOne({_id})
 
+            if(!file){
+                return res.status(400).json({
+                    status: 'warning',
+                    msg: `The record does not exist`
+                })
+            }
+
+            let filepath = path.join(home, file.path)
+            
+            res.download(filepath)
+            /* res.json({
+                status: 'success',
+                msg: 'Your file has been Download',
+                result: filepath
+            }) */
+
+        } catch (error) {
+            res.status(500).json({
+                status: 'danger',
+                msg: error
+            });
+        }
 
     }
 }
