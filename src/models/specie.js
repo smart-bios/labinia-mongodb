@@ -22,8 +22,24 @@ const specieSchema = new Schema({
         unique: true
     },
 
-    description: {
+    kingdom: {
+        type: String,
+        enum: ["Bacteria", "Fungi", "Plantae", "Virus", "Animalia"],
+        required: true
+    },
 
+    description: {
+        type: String
+    },
+
+    img: {
+        type: String
+    },
+
+    status: {
+        type: Boolean,
+        enum: [true, false],
+        default: true
     }
 },{
 

@@ -113,14 +113,24 @@ export default {
                     msg: `The record does not exist`
                 })
             }
-    
-            await User.findByIdAndUpdate( id, {status: false }, { new: true, runValidators: true } );
-    
-            res.json({
-                status: 'success',
-                msg: `User ${id} Deleted`
-            })
-    
+            
+            await User.findByIdAndDelete({ _id: id });
+            //await User.findByIdAndUpdate( id, {status: false }, { new: true, runValidators: true } );
+
+            fs.rmdir(path.join(home, `/storage/${id}`), { recursive: true }, (error) => { 
+                if (error) { 
+                    res.status(500).json({
+                        status: 'danger',
+                        msg: 'cannot delete the user folder',
+                    })
+                }
+
+                res.json({
+                    status: 'success',
+                    msg: `User ${user.username} Deleted`
+                })
+            });
+
         } catch (error) {
             res.status(500).json({
                 status: 'danger',

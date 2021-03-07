@@ -27,14 +27,15 @@ export default {
             });
         }
 
-        let store = path.join( home, `/storage/${req.body.id}/${sampleFile.name}` )
+        let store = path.join( home, `/storage/${req.body.user}/${sampleFile.name}` )
 
         let upload = {
-            user: req.body.id,
+            user: req.body.user,
             filename: sampleFile.name,
-            path: `storage/${req.body.id}/${sampleFile.name}`,
+            path: `storage/${req.body.user}/${sampleFile.name}`,
             description: req.body.description,
-            category: req.body.category
+            category: req.body.category,
+            type: req.body.type
         }
 
         sampleFile.mv(store, function(err) {
