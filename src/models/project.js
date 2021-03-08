@@ -13,10 +13,6 @@ const projectSchema = new Schema({
 
     description: {
         type: String,
-    },
-    
-    methods: {
-        type: String
     }
 },{
 
