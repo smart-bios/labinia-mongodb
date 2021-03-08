@@ -1,4 +1,11 @@
+import os from 'os'
+import path from 'path'
+import fs from 'fs'
+
+
 import Project from '../models/project'
+
+const home = os.homedir()
 
 export default {
 
@@ -16,12 +23,15 @@ export default {
 
             let project = await Project.create(req.body)
 
-            res.json({
-                status: 'success',
-                msg: `Project ${code} has been created`,
-                result: project
-            })
+            fs.mkdir(path.join(home, `/Projects/${code}`), { recursive: true }, (err) => {
+                if (err) throw err;
 
+                res.json({
+                    status: 'success',
+                    msg: `Project ${project.code} has been created`,
+
+                })               
+            });
         } catch (error) {
             res.status(500).json({
                 status: 'danger',
@@ -95,11 +105,21 @@ export default {
             
             await Project.findByIdAndDelete({ _id: id });
             //await User.findByIdAndUpdate( id, {status: false }, { new: true, runValidators: true } );
+            fs.rmdir(path.join(home, `/Projects/${project.code}`), { recursive: true }, (error) => { 
+                if (error) { 
+                    res.status(500).json({
+                        status: 'danger',
+                        msg: 'cannot delete the user folder',
+                    })
+                }
 
-            res.json({
-                status: 'success',
-                msg: `Project ${project.code}  has been deleted`
-            })
+                res.json({
+                    status: 'success',
+                    msg: `Project ${project.code}  has been deleted`
+                })
+            });
+
+            
 
         } catch (error) {
             res.status(500).json({
