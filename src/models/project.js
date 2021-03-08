@@ -14,15 +14,14 @@ const projectSchema = new Schema({
     description: {
         type: String,
     },
-
-    specie: {
-        type: Schema.ObjectId, 
-        ref: 'specie',
-    },
-
+    
     methods: {
         type: String
     }
+},{
+
+    timestamps: true
+  
 })
 
 const Project = model('project', projectSchema);
