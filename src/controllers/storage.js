@@ -27,12 +27,12 @@ export default {
             });
         }
 
-        let store = path.join( home, `/storage/${req.body.user}/${sampleFile.name}` )
+        let store = path.join( home, `/Storage/${req.body.user}/${sampleFile.name}` )
 
         let upload = {
             user: req.body.user,
             filename: sampleFile.name,
-            path: `storage/${req.body.user}/${sampleFile.name}`,
+            path: `Storage/${req.body.user}/${sampleFile.name}`,
             description: req.body.description,
             category: req.body.category,
             type: req.body.type

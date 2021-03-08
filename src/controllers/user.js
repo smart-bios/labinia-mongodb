@@ -27,10 +27,10 @@ export default {
             password = await bcrypt.hash(password, 10);
             let user = await User.create({ username, email, password, role });
             
-            fs.mkdir(path.join(home, `/storage/${user._id}/tmp`), { recursive: true }, (err) => { 
+            fs.mkdir(path.join(home, `/Storage/${user._id}/tmp`), { recursive: true }, (err) => { 
                 if (err) throw err;
 
-                fs.mkdir(path.join(home, `/storage/${user._id}/results`), { recursive: true }, (err) => {
+                fs.mkdir(path.join(home, `/Storage/${user._id}/results`), { recursive: true }, (err) => {
                     if (err) throw err;
 
                     res.json({

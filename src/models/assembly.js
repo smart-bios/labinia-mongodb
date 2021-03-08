@@ -6,45 +6,56 @@ const asemblySchema = new Schema({
         type: Schema.ObjectId, 
         ref: 'project',
     },
-    
-    specie: {
-        type: Schema.ObjectId, 
-        ref: 'specie',
-    },
-
+        
     code: {
         type: String,
         required: true
     },
 
+    specie: {
+        type: Schema.ObjectId, 
+        ref: 'specie',
+    },
+
+    variety: {
+        type: String
+    },
+
     methods: {
         type: String,
     },
+
     version: {
         type: String,
         default: 'v1.0'
     },
+
     level: {
         type: String,
         default: 'contig',
         enum: ['contig','scaffold','complete']
     },
+
     contig: {
-        type: Number,
-        required: true
+        type: String,
     },
+
     size: {
         type: String
     },
+
     cds: {
         type: String
     },
+
     genes: {
         type: String
     },
+
     rRNA: {
         type: String
     },
+    
     tRNA: {
         type: String
     }
