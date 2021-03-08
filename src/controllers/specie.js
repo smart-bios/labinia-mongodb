@@ -2,7 +2,7 @@ import Specie from '../models/specie';
 
 export default {
 
-    add: async( req, res ) => {
+    add: async(req, res) => {
         try {
             let { scientific_name } = req.body
             let existSpecie = await Specie.findOne({ scientific_name })
