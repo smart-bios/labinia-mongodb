@@ -11,8 +11,12 @@ const projectSchema = new Schema({
         type: String
     },
 
+    year:{
+        type: Number
+    },
+
     description: {
-        type: String,
+        type: String
     }
 },{
 

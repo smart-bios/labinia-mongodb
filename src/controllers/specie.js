@@ -14,7 +14,7 @@ export default {
                 })
             }
 
-            let specie = await Specie.create(req.body)
+            await Specie.create(req.body)
 
             res.json({
                 status: 'success',
