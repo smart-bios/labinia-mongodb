@@ -31,7 +31,9 @@ export default {
 
     list: async( req, res ) => {
         try {
-            let gene = await Gene.find({});
+            const { id } = req.params;
+
+            let genes = await Gene.find({assembly: id}).populate('assembly', { code:1 });
 
             res.json({
                 status: 'success',
