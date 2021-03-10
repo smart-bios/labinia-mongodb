@@ -1,8 +1,8 @@
 import {Schema , model} from 'mongoose';
 
-const nucleotideSchema = new Schema({
+const geneSchema = new Schema({
 
-    id: {
+    locus: {
         type: String, 
         required: true,
         unique: true
@@ -13,21 +13,27 @@ const nucleotideSchema = new Schema({
         ref: 'assembly',
         required: true
     },
+
     sequence: {
         type: String, 
         required: true
     },
 
-    legth: {
-        type: Number
+    length: {
+        type: String
     },
     
+    product: {
+        type: String,
+        enum: ['mRNA', 'tRNA', 'rRNA', 'tmRNA','smallRNA']
+    },
+
     desc: {
         type: String
     }
 },{
     timestamps: true
 });
-const Nucleotide = model('nucleotide',nucleotideSchema);
+const Gene = model('gene', geneSchema);
 
-export default Nucleotide;
+export default Gene;
