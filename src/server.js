@@ -1,12 +1,12 @@
+import dotenv from 'dotenv'
 import path from 'path'
 import express from 'express'
 import morgan from 'morgan'
 import helmet from 'helmet'
 import cors from 'cors'
 import fileUpload  from 'express-fileupload'
-import dotenv from 'dotenv'
-dotenv.config()
 
+dotenv.config()
 
 import rutas from './routes'
 
@@ -32,7 +32,7 @@ app.set('port', process.env.PORT || 3000 )
 app.use('/api',rutas);
 
 //Archivos estaticos
-app.use(express.static(path.join(__dirname ,'/public')));
+app.use(express.static(path.join(__dirname ,'./public')));
 
 
 export default app
