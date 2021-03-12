@@ -4,8 +4,8 @@ import app from './server'
 
 
 // DATABSES CONECTION
-const uri = 'mongodb://localhost:27017/'+process.env.DATABASE
-//const uri = `mongodb+srv://${process.env.USERNAME}:${process.env.PASSWORD}@cluster0.kosui.mongodb.net/${process.env.DATABASE}?retryWrites=true&w=majority`
+//const uri = 'mongodb://localhost:27017/'+process.env.DATABASE
+const uri = `mongodb+srv://${process.env.USERNAME}:${process.env.PASSWORD}@cluster0.kosui.mongodb.net/${process.env.DATABASE}?retryWrites=true&w=majority`
 const option = {
     useCreateIndex: true,
     useNewUrlParser: true, 
