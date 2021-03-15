@@ -1,24 +1,24 @@
-import Gene from '../models/gene';
+import Protein from '../models/protein';
 
 export default {
 
     add: async( req, res ) => {
         try {
             let { locus } = req.body
-            let existGene = await Gene.findOne({ locus })
+            let existProtein = await Protein.findOne({ locus })
 
-            if(existGene){
+            if(existProtein){
                 return res.status(400).json({
                     status: 'warning',
-                    msg: `The gene is already registered: ${locus}`
+                    msg: `The Protein is already registered: ${locus}`
                 })
             }
 
-            await Gene.create(req.body)
+            await Protein.create(req.body)
 
             res.json({
                 status: 'success',
-                msg: `Gene ${locus} has been created`
+                msg: `Protein ${locus} has been created`
             })
 
         } catch (error) {
@@ -31,14 +31,34 @@ export default {
 
     list: async( req, res ) => {
         try {
-            const { id } = req.params;
 
-            let genes = await Gene.find({assembly: id}).populate('assembly', { code:1 });
+            let proteins = await Protein.find({}).populate('assembly', { code: 1 }).populate('gene');
 
             res.json({
                 status: 'success',
-                msg: `Total gene: `,
-                result: genes
+                msg: `Total Proteins: `,
+                result: proteins
+            });
+
+
+        } catch (error) {
+            res.status(500).json({
+                status: 'danger',
+                msg: error
+            });
+        }
+    },
+
+    find: async( req, res ) => {
+        try {
+            const { id } = req.params;
+
+            let proteins = await Protein.find({assembly: id}).populate('assembly', { code: 1 }).populate('gene', { locus:1, sequence:1 });
+
+            res.json({
+                status: 'success',
+                msg: `Total Proteins: `,
+                result: proteins
             });
 
 
@@ -55,9 +75,9 @@ export default {
             const { id } = req.params;
             const { body } = req;
     
-            const gene = await Gene.findOne( { _id: id } );
+            const protein = await Protein.findOne( { _id: id } );
     
-            if(!gene){
+            if(!protein){
                 return res.status(400).json({
                     status: 'warning',
                     msg: `The record does not exist`,
@@ -65,11 +85,11 @@ export default {
                 })
             }
     
-            await Gene.findByIdAndUpdate( id, body, { new: true, runValidators: true });
+            await Protein.findByIdAndUpdate( id, body, { new: true, runValidators: true });
     
             res.json({
                 status: 'success',
-                msg: `Gene ${gene.locus} has been updated`,
+                msg: `proteins ${protein.locus} has been updated`,
 
             })
     
@@ -85,21 +105,21 @@ export default {
         try {
             const { id } = req.params;
     
-            const Gene = await Gene.findOne( { _id: id } );
+            const protein = await Protein.findOne( { _id: id } );
     
-            if(!gene){
+            if(!protein){
                 return res.status(400).json({
                     status: 'warning',
                     msg: `The record does not exist`
                 })
             }
             
-            await Gene.findByIdAndDelete({ _id: id });
+            await Protein.findByIdAndDelete({ _id: id });
             //await User.findByIdAndUpdate( id, {status: false }, { new: true, runValidators: true } );
 
             res.json({
                 status: 'success',
-                msg: `Gene ${gene.locus}  has been deleted`
+                msg: `Protein ${protein.locus}  has been deleted`
             })
 
         } catch (error) {

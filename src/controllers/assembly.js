@@ -13,8 +13,6 @@ export default {
             let { project, code } = req.body
             let existAssembly = await Assembly.findOne({ code })
             
-            //.populate('project',{ code:1 })
-
             if(existAssembly){
                 return res.status(400).json({
                     status: 'warning',
@@ -63,6 +61,31 @@ export default {
             });
         }
     },
+
+    find: async( req, res ) => {
+        try {
+            let { id } = req.params;
+
+            let assembly = await Assembly.find({ project: id})
+            .populate('project',{ code:1 })
+            .populate('specie',{ scientific_name:1 })
+            ;
+
+            res.json({
+                status: 'success',
+                msg: `Total assemblys: `,
+                result: assembly
+            });
+
+
+        } catch (error) {
+            res.status(500).json({
+                status: 'danger',
+                msg: error
+            });
+        }
+    },
+
 
     edit: async( req, res ) => {
         try {

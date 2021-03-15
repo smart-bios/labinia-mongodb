@@ -1,0 +1,14 @@
+
+
+export default {
+    blast: () =>{
+
+    },
+
+
+    bbduk: () =>{
+
+    },
+
+    
+}
