@@ -4,6 +4,7 @@ import storageRoute from "./storage";
 import specieRoute from './specie';
 import projectRoute from './project';
 import assemblyRoute from './assembly';
+import databaseRoute from './database'
 import geneRoute from './gene';
 import proteinRoute from './protein';
 
@@ -14,6 +15,7 @@ route.use( '/storage', storageRoute);
 route.use( '/specie', specieRoute);
 route.use( '/project', projectRoute);
 route.use( '/assembly', assemblyRoute);
+route.use( '/database', databaseRoute);
 route.use( '/gene', geneRoute);
 route.use( '/protein', proteinRoute);
 

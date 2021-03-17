@@ -19,7 +19,6 @@ const specieSchema = new Schema({
 
     alias: {
         type: String,
-        unique: true
     },
 
     kingdom: {
