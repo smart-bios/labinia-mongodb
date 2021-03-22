@@ -77,6 +77,26 @@ export default {
         }
     },
 
+    find: async(req, res ) => {
+        try {
+            let user = req.params.uid;
+            let files = await Storage.find({user},{user:0});
+            //let amount = await User.countDocuments({}); 
+            
+            res.json({
+                status: 'success',
+                //msg: `Total files: ${amount}`,
+                msg: `Total files:`,
+                result: files
+            }); 
+        } catch (error) {
+            res.status(500).json({
+                status: 'danger',
+                msg: error
+            });
+        }
+    },
+
     delete: async(req, res) => {
         try {
             let _id = req.params.id;
