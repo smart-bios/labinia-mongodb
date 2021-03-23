@@ -11,10 +11,10 @@ export default {
     blast: (req, res ) => {
         try {
             let database = path.join(databasesRoot, req.body.database)
-            let outfmt = "6 qseqid qlen sseqid slen stitle pident qcovs length mismatch gapopen evalue bitscore"
-            let headers = ['qseqid', 'qlen', 'sseqid', 'slen','stitle', 'pident', 'qcovs','length', 'mismatch', 'gapopen', 'evalue', 'bitscore']         
+            //let outfmt = "6 qseqid qlen sseqid slen stitle pident qcovs length mismatch gapopen evalue bitscore"
+            //let headers = ['qseqid', 'qlen', 'sseqid', 'slen','stitle', 'pident', 'qcovs','length', 'mismatch', 'gapopen', 'evalue', 'bitscore']         
             let sequences = spawn('echo',[`${req.body.sequences}`])
-            let blast= spawn(`${req.body.type}`, ['-db', database,'-max_target_seqs', 5 ,'-evalue', 1e-20, '-perc_identity', 60, '-num_threads', process.env.THREADSM, '-outfmt', outfmt])
+            let blast= spawn(`${req.body.type}`, ['-db', database,'-max_target_seqs', 5 ,'-evalue', 1e-20, '-perc_identity', 60, '-num_threads', process.env.THREADSM, '-outfmt',15])
             let result = ''
             sequences.stdout.on('data', (data) => { blast.stdin.write(data) });
             sequences.stderr.on('data', (data) => { console.error(`stderr seq: ${data}`); });
@@ -45,7 +45,7 @@ export default {
                 res.json({
                     status: 'success',
                     msg: 'Blast terminado',
-                    result
+                    result: JSON.parse(result)
                 })
             });
 
