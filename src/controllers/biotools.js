@@ -1,11 +1,14 @@
 import { spawn } from 'child_process'
 import os from 'os'
 import path from 'path'
+import fs from 'fs'
+import zipdir from 'zip-dir'
 import Storage from '../models/storage'
 
-
+const home = os.homedir()
 const databasesRoot = path.join(os.homedir(), 'Databases');
 const bbduk  = '/opt/biotools/bbmap/bbduk.sh'
+const spades = '/opt/biotools/Spades/SPAdes-3.13.0-Linux/bin/spades.py'
 
 export default {
 
@@ -59,12 +62,13 @@ export default {
 
     },
 
-    bbduk: async (req, res ) => {
+    bbduk: (req, res ) => {
         try {
             let fq1 = path.join(os.homedir(), req.body.fq1)
             let fq2 = path.join(os.homedir(), req.body.fq2)
             let output = path.join(os.homedir(), `Storage/${req.body.user._id}/results`)
             let log = ''
+            let msg = 'Input is being processed as paired'
             let params = [  
                 `in1=${fq1}`,
                 `out1=${output}/${req.body.basename}_R1_good.fq.gz`, 
@@ -77,7 +81,10 @@ export default {
                 `minlen=${req.body.length}`,
                 'json=t'
             ]
-            if(!req.body.paired) params.splice(2,2)
+            if(!req.body.paired){
+                params.splice(2,2)
+                msg='Input is being processed as unpaired'
+            } 
     
             let  cmd_bbduk = spawn(bbduk, params)
            
@@ -113,7 +120,7 @@ export default {
                         console.log("Data inserted")
                         res.json({
                             status: 'success',
-                            msg: 'BBDuk finished',
+                            msg,
                             result: JSON.parse(log)
                         })
                     }).catch(function(error){
@@ -127,6 +134,51 @@ export default {
                     })
                 }
             })
+        } catch (error) {
+            res.status(500).json({
+                status: 'danger',
+                msg: error
+            });
+        }
+    },
+
+    unicycler: (req, res) => {
+        try {
+            let fq1 = path.join(os.homedir(), req.body.fq1)
+            let fq2 = path.join(os.homedir(), req.body.fq2)
+            let output = path.join(os.homedir(), `Storage/${req.body.user._id}/tmp/${req.body.name}`)
+            let unicycler = spawn('unicycler',['-1', fq1, '-2', fq2,'--mode', req.body.mode, '--min_fasta_length', req.body.length, '-t', process.env.THREADSH,'-o', output,'--spades_path', spades, '--keep', 0])
+            
+            unicycler.stderr.on('data', (data) => {console.log(data.toString())});
+            unicycler.stdout.on('data', (data) => {console.log(data.toString())});
+            
+            unicycler.on('close', (code) => {
+                console.log(`unicycler process exited with code ${code}`);
+                if(code == 0){
+
+                    zipdir(output, { saveTo: `${home}/Storage/${req.body.user._id}/results/${req.body.name}.zip` }, function (err, buffer) {
+                        if(err) console.log('Something went wrong!', err);
+                    })
+
+                    fs.rename(`${output}/assembly.fasta`, `${os.homedir()}/Storage/${req.body.user._id}/results/${req.body.name}.fna`, (err) => {
+                        if(err) console.log('Something went wrong!', err);
+                    });
+
+                    res.json({
+                        status: 'success',
+                        msg:'Unicucler finished',
+                        result: 'asdf'
+                    })
+
+                }else{
+                    res.json({
+                        status: 'danger',
+                        msg: 'Unicycler finished with error',
+                        result: ''
+                    })
+                }
+            })
+            
         } catch (error) {
             res.status(500).json({
                 status: 'danger',
