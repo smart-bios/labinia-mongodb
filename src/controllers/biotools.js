@@ -1,4 +1,4 @@
-import { spawn } from 'child_process'
+import { exec, spawn } from 'child_process'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
@@ -9,6 +9,7 @@ const home = os.homedir()
 const databasesRoot = path.join(os.homedir(), 'Databases');
 const bbduk  = '/opt/biotools/bbmap/bbduk.sh'
 const spades = '/opt/biotools/Spades/SPAdes-3.13.0-Linux/bin/spades.py'
+const prokka = '/opt/biotools/prokka/bin/prokka'
 
 export default {
 
@@ -115,17 +116,14 @@ export default {
                         category: 'result'
                     }
 
-                    Storage.insertMany([trimfq1, trimfq2])
-                    .then(function(){
-                        console.log("Data inserted")
+                    Storage.insertMany([trimfq1, trimfq2], (err, data) => {
+                        if(err) console.log('Something went wrong!', err);
                         res.json({
                             status: 'success',
                             msg,
                             result: JSON.parse(log)
                         })
-                    }).catch(function(error){
-                        console.log(error)  
-                    });
+                    })
                 }else{
                     res.json({
                         status: 'danger',
@@ -158,18 +156,40 @@ export default {
 
                     zipdir(output, { saveTo: `${home}/Storage/${req.body.user._id}/results/${req.body.name}.zip` }, function (err, buffer) {
                         if(err) console.log('Something went wrong!', err);
-                    })
 
-                    fs.rename(`${output}/assembly.fasta`, `${os.homedir()}/Storage/${req.body.user._id}/results/${req.body.name}.fna`, (err) => {
+                        fs.rename(`${output}/assembly.fasta`, `${home}/Storage/${req.body.user._id}/results/${req.body.name}_genomic.fna`, (err) => {
+                            if(err) console.log('Something went wrong!', err);
+                            
+                        });
+                    })
+                    
+                    let aResult = {
+                        user: `${req.body.user._id}`,
+                        filename: `${req.body.name}.zip`,
+                        path: `Storage/${req.body.user._id}/results/${req.body.name}.zip`,
+                        description: `Unicycler assembly result`,
+                        type: 'other',
+                        category: 'result'
+                    }
+
+                    let aGenomic = {
+                        user: `${req.body.user._id}`,
+                        filename: `${req.body.name}_genomic.fna`,
+                        path: `Storage/${req.body.user._id}/results/${req.body.name}_genomic.fna`,
+                        description: `Draft genome Unicycler assembly`,
+                        type: 'fasta',
+                        category: 'result'
+                        
+                    }
+
+                    Storage.insertMany([aResult, aGenomic], (err, data) => {
                         if(err) console.log('Something went wrong!', err);
-                    });
-
-                    res.json({
-                        status: 'success',
-                        msg:'Unicucler finished',
-                        result: 'asdf'
+                        res.json({
+                            status: 'success',
+                            msg:'Unicycler finished',
+                            result: data
+                        })
                     })
-
                 }else{
                     res.json({
                         status: 'danger',
@@ -184,6 +204,127 @@ export default {
                 status: 'danger',
                 msg: error
             });
+        }
+    },
+
+    quast: (req, res ) => {
+
+        try {
+            let assembly = path.join(os.homedir(), req.body.assembly)
+            let reference = path.join(os.homedir(), `Databases/references_genomes/${req.body.reference}_genomic`)
+            let output = path.join(os.homedir(), `Storage/${req.body.user._id}/tmp/${req.body.name}`);
+            
+            let quast = spawn('quast.py', ['-r', `${reference}.fna`, '-g', `${reference}.gff`, '-t', process.env.THREADSM, '-o', output, '--no-html','--no-icarus', assembly])
+            
+            quast.stdout.on('data', (data) => {console.log(data.toString())})
+
+            quast.on('close', (code) => {
+                console.log(`Quast process exited with code ${code}`);
+                if(code == 0){
+                    zipdir(output, { saveTo: `${home}/Storage/${req.body.user._id}/results/${req.body.name}.zip` }, function (err, buffer) {
+                        if(err) console.log('Something went wrong!', err);
+                        console.log('Quast result zipped')
+                    })
+
+                    let qResult = {
+                        user: `${req.body.user._id}`,
+                        filename: `${req.body.name}.zip`,
+                        path: `Storage/${req.body.user._id}/results/${req.body.name}.zip`,
+                        description: 'Quast report result',
+                        type: 'other',
+                        category: 'result'
+                    }
+
+                    Storage.create(qResult, (err, data) => {
+                        if(err) console.log('Something went wrong!', err);
+
+                        res.json({
+                            status: 'success',
+                            msg:'Quast finished',
+                            result: {
+                                quast: data,
+                                report: `${output}/report.tsv`,
+                                unaligned: `${output}/contigs_reports/unaligned_report.tsv`
+                            }
+                        })
+                    })
+                    
+                }else{
+                    return res.json({
+                        status: 'danger',
+                        msg: 'Quast finished with error',
+                        result: ''
+                    })
+                }  
+            }) 
+            
+        } catch (error) {
+            res.status(500).json({
+                status: 'danger',
+                msg: error
+            });  
+        }
+
+    },
+
+    prokka: (req, res) => {
+        try {
+            console.log(req.body)
+            let assembly = path.join(os.homedir(), req.body.assembly)
+            let output = path.join(os.homedir(), `Storage/${req.body.user._id}/tmp/${req.body.name}`);
+           
+            let cmd_prokka = spawn( prokka, ['--outdir', output, '--prefix', req.body.name, '--locustag', req.body.locustag, '--kingdom', req.body.kingdom, '--cpus', process.env.THREADSH, '--force', assembly])
+            
+            console.log(cmd_prokka)
+            cmd_prokka.stderr.on('data', (data) => {console.log(data.toString())});
+
+
+            cmd_prokka.on('close', (code) => {
+                console.log(`prokka process exited with code ${code}`);
+                if(code == 0){
+
+                    zipdir(output, { 
+                        saveTo: `${home}/Storage/${req.body.user._id}/results/${req.body.name}.zip` 
+                    }, function (err, buffer) {
+                        if(err) console.log('Something went wrong!', err);
+                        
+                        console.log('Prokka result zipped')
+                    })
+
+                    let pResult = {
+                        user: req.body.user._id,
+                        filename: `${req.body.name}.zip`,
+                        path: `Storage/${req.body.user._id}/results/${req.body.name}.zip`,
+                        description: 'Prokka prediccion result',
+                        type: 'other',
+                        category: 'result'
+                    }
+
+                    Storage.create(pResult, (err, data) => {
+                        if(err) console.log('Something went wrong!', err);
+                        res.json({
+                            status: 'success',
+                            msg:'Prokka finished',
+                            result: {
+                                prokka: data,
+                                report: `${output}/${req.body.name}.txt`
+                            }
+                        })
+                    })                
+                }else{
+                    return res.json({
+                        status: 'danger',
+                        msg: 'Prokka finished with error',
+                        result: ''
+                    })
+                }
+            }) 
+            
+        } catch (error) {
+            res.status(500).json({
+                status: 'danger',
+                msg: error
+            }); 
         }
     }
 
