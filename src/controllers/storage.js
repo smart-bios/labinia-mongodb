@@ -150,11 +150,6 @@ export default {
             let filepath = path.join(home, file.path)
             
             res.download(filepath)
-            /* res.json({
-                status: 'success',
-                msg: 'Your file has been Download',
-                result: filepath
-            }) */
 
         } catch (error) {
             res.status(500).json({
@@ -162,6 +157,29 @@ export default {
                 msg: error
             });
         }
+    },
 
+    fastDownload: (req, res) => {
+
+        
+        let basename = path.basename(req.body.report)
+        let file = path.join(home,req.body.report)
+        res.setHeader('Content-type', 'application/zip');
+        res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.header("Pragma", "no-cache");
+        res.header("Expires", 0);
+
+        res.download(file, basename, (err)=>{
+            if(err){
+                console.log(err)
+                res.status(406).json({
+                    status: 'failed',
+                    err
+                });
+            }else{
+                console.log('file has been download')
+            }
+            
+        }); 
     }
 }

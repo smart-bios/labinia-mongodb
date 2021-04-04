@@ -31,13 +31,13 @@ export default {
 
     list: async( req, res ) => {
         try {
-            const { id } = req.params;
+            const { database } = req.params;
 
-            let databases = await Database.find({});
+            let databases = await Database.find({database});
 
             res.json({
                 status: 'success',
-                msg: `Total gene: `,
+                msg: `List databases `,
                 result: databases
             });
 
@@ -69,7 +69,7 @@ export default {
     
             res.json({
                 status: 'success',
-                msg: `Gene ${database.name} has been updated`,
+                msg: `Database ${database.name} has been updated`,
 
             })
     
@@ -99,7 +99,7 @@ export default {
 
             res.json({
                 status: 'success',
-                msg: `Gene ${database.name}  has been deleted`
+                msg: `Database ${database.name}  has been deleted`
             })
 
         } catch (error) {

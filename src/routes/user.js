@@ -8,5 +8,6 @@ route.get( '/list', User.list );
 route.put( '/edit/:id', User.edit);
 route.delete( '/delete/:id', User.delete);
 route.post( '/login', User.login);
+route.post( '/logout', User.logout);
 
 export default route

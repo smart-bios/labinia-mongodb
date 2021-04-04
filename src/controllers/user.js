@@ -1,6 +1,6 @@
 import os from 'os'
 import path from 'path'
-import fs from 'fs'
+import fs from 'fs-extra'
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/user';
@@ -189,5 +189,19 @@ export default {
                 result: error
             })
         }
+    },
+
+    logout: (req, res) => {
+        
+        console.log(req.body)
+        let tmp = path.join(home, `Storage/${req.body.user}/tmp`)
+        fs.emptyDir(tmp, (err) => {
+            if (err) return console.error(err)
+            
+            res.json({
+                status: 'success',
+                msg: 'GoodBay, removed temp files'
+            })
+        })
     }
 }
