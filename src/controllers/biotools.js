@@ -187,11 +187,7 @@ export default {
                             category: 'result'
                         }
                         let json = JSON.parse(log)
-                        /* console.log(JSON.parse(log)) */
 
-                        //let percent = (json.readsQTrimmed * 100) / json.readsIn;
-                        
-                        //
                         Storage.insertMany([trimfq1, trimfq2], (err, data) => {
                             if(err) console.log('Something went wrong!', err);
                             res.json({
@@ -229,60 +225,85 @@ export default {
         }
     },
 
-    fscreen: (req, res ) => {
+    fscreen: async (req, res ) => {
         try {
-            let fastq = path.join(os.homedir(), req.body.fastq)
-            let output = path.join(os.homedir(), `Storage/${req.body.user._id}/results/test`)
-            let config = path.join(os.homedir(), `Storage/${req.body.user._id}/tmp/fscreen.conf.txt`)
-            let file_config = fs.createWriteStream(config);
-            let databases =  req.body.databases.map(x => {
-                let name = x.split(path.sep)
-                let nameCapitalized = name[name.length-1].charAt(0).toUpperCase() + name[name.length-1].slice(1)
-                return `DATABASE\t${nameCapitalized}\t${path.join(databasesRoot, x)}`
-            }) 
+            let baseName = await Storage.findOne( {filename: `${req.body.basename}.zip`} );
 
-            file_config.on('error', function(err) {
-                 console.log(err)
-                 res.status(500).json({
-                    status: 'danger',
-                    msg: error
-                });
-            });
-
-            databases.forEach(value => file_config.write(`${value}\r\n`));
-
-            file_config.on('finish', () => {
-                console.log(`wrote all the array data to file ${config}`);
-                
-                let cmd_fscreen = spawn(fqScreen, ['--aligner', 'bowtie2', '--conf', config, '--outdir', output, '--threads', 6, '--force', '--subset', req.body.subset, fastq])
-                
-                cmd_fscreen.stdout.on('data', (data) => {console.log(data.toString())});
-                cmd_fscreen.stderr.on('data', (data) => {console.log(data.toString())});
-
-                cmd_fscreen.on('close', (code) => {
-                    console.log(`fastq screen process exited with code ${code}`);
-                    if(code == 0){
-                       
-                        res.json({
-                            status: 'success',
-                            msg: 'Fastq Screen',
-                            result: req.body
-                        })  
-                    }else{
-                        res.json({
-                            status: 'danger',
-                            msg: 'Unicycler finished with error',
-                            result: ''
-                        })
-                    }
-
+            if(baseName){
+                return res.status(400).json({
+                    status: 'warning',
+                    msg: `The Basename is already registered: ${req.body.basename}`
                 })
 
-                
-             });
-             
-            file_config.end();
+            }else{
 
+                let fastq = path.join(os.homedir(), req.body.fastq)
+                let output = path.join(os.homedir(), `Storage/${req.body.user._id}/tmp/${req.body.basename}`)
+                let config = path.join(os.homedir(), `Storage/${req.body.user._id}/tmp/fscreen.conf.txt`)
+               
+                let file_config = fs.createWriteStream(config);
+
+                let databases =  req.body.databases.map(x => {
+                    let name = x.split(path.sep)
+                    let nameCapitalized = name[name.length-1].charAt(0).toUpperCase() + name[name.length-1].slice(1)
+                    return `DATABASE\t${nameCapitalized}\t${path.join(databasesRoot, x)}`
+                }) 
+
+                file_config.on('error', function(err) {
+                    console.log(err)
+                    res.status(500).json({
+                        status: 'danger',
+                        msg: error
+                    });
+                });
+
+                databases.forEach(value => file_config.write(`${value}\r\n`));
+
+                file_config.on('finish', () => {
+                    console.log(`wrote all the array data to file ${config}`);
+                    
+                    let cmd_fscreen = spawn(fqScreen, ['--aligner', 'bowtie2', '--conf', config, '--outdir', output, '--threads', 6, '--force', '--subset', req.body.subset, fastq])
+                    
+                    cmd_fscreen.stdout.on('data', (data) => {console.log(data.toString())});
+                    cmd_fscreen.stderr.on('data', (data) => {console.log(data.toString())});
+
+                    cmd_fscreen.on('close', (code) => {
+                        console.log(`fastq screen process exited with code ${code}`);
+                        if(code == 0){
+
+                            zipdir(output, { saveTo: `${home}/Storage/${req.body.user._id}/results/${req.body.basename}.zip` }, function (err, buffer) {
+                                if(err) console.log('Something went wrong!', err);
+                            })
+
+                            let aResult = {
+                                user: `${req.body.user._id}`,
+                                filename: `${req.body.basename}.zip`,
+                                path: `Storage/${req.body.user._id}/results/${req.body.basename}.zip`,
+                                description: `Fastq Screen result`,
+                                type: 'other',
+                                category: 'result'
+                            }
+
+                            res.sendFile(`${output}/short_reads_1_screen.html`)
+                            /* res.json({
+                                status: 'success',
+                                msg: 'Fastq Screen',
+                                result: aResult
+                            }) */
+                        }else{
+                            res.json({
+                                status: 'danger',
+                                msg: 'Unicycler finished with error',
+                                result: ''
+                            })
+                        }
+                    })
+                });
+                
+                file_config.end();
+            }
+            
+            
         } catch (error) {
             console.log(`Error: ${error}`)
              
@@ -344,13 +365,11 @@ export default {
                         }
 
                         Storage.insertMany([aResult, aGenomic], (err, data) => {
-                            if(err) console.error('Something went wrong!', err);
+                            if(err) return console.error('Something went wrong!', err);
                             
-                            exec(`assembly-scan.py ${output}/assembly.fasta`, (error, stdout, stderr) => {
-                                if (error) {
-                                    console.error(`exec error: ${error}`);
-                                    return;
-                                }
+                            Report.assemblyStats(`${output}/assembly.fasta`, (err, stdout) => {
+                                if(err) return console.error('Something went wrong!', err); 
+
                                 res.json({
                                     status: 'success',
                                     msg:'Unicycler finished',
@@ -359,7 +378,7 @@ export default {
                                         unicycler: data[0]
                                     }
                                 })
-                            });                        
+                            })                      
                         })
                     }else{
                         res.json({

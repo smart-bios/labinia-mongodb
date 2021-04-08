@@ -1,4 +1,5 @@
 import csv from 'csv-parser';
+import { exec } from 'child_process'
 import fs from 'fs';
 
 export default {
@@ -34,19 +35,19 @@ export default {
         }else{
             return callback('ERROR fastqData', null)
         }
-        /* let lines = file.split('\n')
-        let statistics = lines.slice(3,10)
-        let headers = ['measure','value']
-        let report = []
-        fs.createReadStream(statistics)
-        .on('error', () => {
-           return callback('ERROR PARSE DATA', null)
-        })
-        .pipe(csv({ separator: '\t', headers }))
-        .on('data', (data) => report.push(data))
-        .on('end', () => {
-            return callback(null, report)
-        }); */
+    },
+
+    assemblyStats: (input, callback) => {
+        exec(`assembly-scan.py ${input}`, (error, stdout, stderr) => {
+            if (error) {
+                return callback(error, null);
+            }
+
+            return callback(null, stdout)
+        });                        
+    },
+
+    screenReport: (input, callback) => {
         
-    } 
+    }
 }

@@ -192,8 +192,6 @@ export default {
     },
 
     logout: (req, res) => {
-        
-        console.log(req.body)
         let tmp = path.join(home, `Storage/${req.body.user}/tmp`)
         fs.emptyDir(tmp, (err) => {
             if (err) return console.error(err)
