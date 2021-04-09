@@ -5,6 +5,7 @@ import morgan from 'morgan'
 import helmet from 'helmet'
 import cors from 'cors'
 import fileUpload  from 'express-fileupload'
+import history from 'connect-history-api-fallback'
 
 dotenv.config()
 
@@ -32,12 +33,8 @@ app.set('port', process.env.PORT || 3000 )
 app.use('/api',rutas);
 
 //Archivos estaticos
+app.use(history());
 app.use(express.static(path.join(__dirname ,'./public')));
 
 
 export default app
-
-
-/* app.listen(process.env.PORT, () => {
-    console.log('Sirviendo en puerto ', process.env.PORT);
-}); */
