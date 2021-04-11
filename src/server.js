@@ -18,7 +18,7 @@ app.use(morgan('tiny'));
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
-app.use(express.urlencoded({extended:false}));
+app.use(express.urlencoded({extended:true}));
 app.use(fileUpload({
     useTempFiles : true,
     tempFileDir : '/tmp/'
@@ -34,7 +34,7 @@ app.use('/api',rutas);
 
 //Archivos estaticos
 app.use(history());
-app.use(express.static(path.join(__dirname ,'./public')));
+app.use(express.static(path.join(__dirname ,'public')));
 
 
 export default app

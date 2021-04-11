@@ -1,6 +1,8 @@
 import csv from 'csv-parser';
 import { exec } from 'child_process'
 import fs from 'fs';
+import imageToBase64 from 'image-to-base64'
+
 
 export default {
 
@@ -42,12 +44,32 @@ export default {
             if (error) {
                 return callback(error, null);
             }
-
             return callback(null, stdout)
         });                        
     },
 
-    screenReport: (input, callback) => {
+    quastReport: (input, callback) => {
+        let headers = ['item','value']
+        let report = []
+        fs.createReadStream(input)
+        .on('error', () => {
+           return callback('ERROR PARSE SUMARY', null)
+        })
+        .pipe(csv({ separator: '\t', headers }))
+        .on('data', (data) => report.push(data))
+        .on('end', () => {
+            return callback(null, report)
+        });
         
+    },
+
+    getImg: (path, callback) => {
+        
+        imageToBase64(path) // Path to the image
+        .then((response) => {
+            return callback(null, response)
+        }).catch((error) => {
+            return callback(error, null)
+        })
     }
 }

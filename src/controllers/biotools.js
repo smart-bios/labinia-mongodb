@@ -240,7 +240,7 @@ export default {
                 let fastq = path.join(os.homedir(), req.body.fastq)
                 let output = path.join(os.homedir(), `Storage/${req.body.user._id}/tmp/${req.body.basename}`)
                 let config = path.join(os.homedir(), `Storage/${req.body.user._id}/tmp/fscreen.conf.txt`)
-               
+                let basename = path.basename(fastq).split('.')
                 let file_config = fs.createWriteStream(config);
 
                 let databases =  req.body.databases.map(x => {
@@ -283,13 +283,22 @@ export default {
                                 type: 'other',
                                 category: 'result'
                             }
+                            
+                            Storage.create(aResult, (err, data) => {
+                                if(err) console.log('Something went wrong!', err);
 
-                            res.sendFile(`${output}/short_reads_1_screen.html`)
-                            /* res.json({
-                                status: 'success',
-                                msg: 'Fastq Screen',
-                                result: aResult
-                            }) */
+                                Report.getImg(`${output}/${basename[0]}_screen.png`, (err, img) => {
+                                    if(err) console.log('Something went wrong!', err);
+                                    res.json({
+                                        status: 'success',
+                                        msg: 'Fastq Screen',
+                                        result: {
+                                            report: data,
+                                            img
+                                        }        
+                                    })
+                                })
+                            })
                         }else{
                             res.json({
                                 status: 'danger',
@@ -389,9 +398,6 @@ export default {
                     }
                 })
             }
-
-            
-            
         } catch (error) {
             res.status(500).json({
                 status: 'danger',
@@ -407,7 +413,7 @@ export default {
 
         try {
             let assembly = path.join(os.homedir(), req.body.assembly)
-            let reference = path.join(os.homedir(), `Databases/references_genomes/${req.body.reference}_genomic`)
+            let reference = path.join(os.homedir(), `Databases/genomes/${req.body.reference}_genomic`)
             let output = path.join(os.homedir(), `Storage/${req.body.user._id}/tmp/${req.body.name}`);
             
             let quast = spawn('quast.py', ['-r', `${reference}.fna`, '-g', `${reference}.gff`, '-t', process.env.THREADSM, '-o', output, '--no-html','--no-icarus', assembly])
@@ -433,15 +439,22 @@ export default {
 
                     Storage.create(qResult, (err, data) => {
                         if(err) console.log('Something went wrong!', err);
+                        Report.quastReport(`${output}/report.tsv`, (err, report) => {
+                            if(err) console.log('Something went wrong!', err);
+                            
+                            Report.quastReport(`${output}/contigs_reports/unaligned_report.tsv`, (err, unaligned) => {
+                                if(err) console.log('Something went wrong!', err);
 
-                        res.json({
-                            status: 'success',
-                            msg:'Quast finished',
-                            result: {
-                                quast: data,
-                                report: `${output}/report.tsv`,
-                                unaligned: `${output}/contigs_reports/unaligned_report.tsv`
-                            }
+                                res.json({
+                                    status: 'success',
+                                    msg:'Quast finished',
+                                    result: {
+                                        quast: data,
+                                        report,
+                                        unaligned
+                                    }
+                                })
+                            })
                         })
                     })
                     
