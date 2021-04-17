@@ -89,7 +89,7 @@ export default {
     
             res.json({
                 status: 'success',
-                msg: `proteins ${protein.locus} has been updated`,
+                msg: `Protein ${protein.locus} has been updated`,
 
             })
     

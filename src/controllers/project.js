@@ -78,7 +78,7 @@ export default {
     
             res.json({
                 status: 'success',
-                msg: `Specie ${project.code} has been updated`,
+                msg: `Project ${project.code} has been updated`,
 
             })
     
@@ -115,12 +115,10 @@ export default {
 
                 res.json({
                     status: 'success',
-                    msg: `Project ${project.code}  has been deleted`
+                    msg: `Project ${project.code} has been deleted`
                 })
             });
-
             
-
         } catch (error) {
             res.status(500).json({
                 status: 'danger',

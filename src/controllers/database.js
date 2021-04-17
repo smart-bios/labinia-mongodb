@@ -28,8 +28,26 @@ export default {
             });
         }
     },
-
     list: async( req, res ) => {
+        try {
+            let databases = await Database.find({});
+
+            res.json({
+                status: 'success',
+                msg: `List databases `,
+                result: databases
+            });
+
+
+        } catch (error) {
+            res.status(500).json({
+                status: 'danger',
+                msg: error
+            });
+        }
+    },
+
+    find: async( req, res ) => {
         try {
             const { database } = req.params;
 
@@ -69,7 +87,7 @@ export default {
     
             res.json({
                 status: 'success',
-                msg: `Database ${database.name} has been updated`,
+                msg: `Database ${database.name} ha been updated`,
 
             })
     
@@ -99,7 +117,7 @@ export default {
 
             res.json({
                 status: 'success',
-                msg: `Database ${database.name}  has been deleted`
+                msg: `Database ${database.name} has been deleted`
             })
 
         } catch (error) {

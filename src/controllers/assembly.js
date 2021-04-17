@@ -16,7 +16,7 @@ export default {
             if(existAssembly){
                 return res.status(400).json({
                     status: 'warning',
-                    msg: `The Assembly code is already registered: ${code}`
+                    msg: `ERROR: El codigo ${code} ya esta registrado `
                 })
             }
             
@@ -28,7 +28,7 @@ export default {
                 if (err) throw err;
                 res.json({
                     status: 'success',
-                    msg: `Project ${code} has been created`,
+                    msg: `El ensamble ${code} ha sido creado`,
                 })               
             });
 
@@ -68,12 +68,13 @@ export default {
 
             let assembly = await Assembly.find({ project: id})
             .populate('project',{ code:1 })
-            .populate('specie',{ scientific_name:1 })
-            ;
+            .populate('specie',{ scientific_name:1 });
+
+            let total = await Assembly.countDocuments({ project: id})
 
             res.json({
                 status: 'success',
-                msg: `Total assemblys: `,
+                msg: `Total assemblys: ${total}`,
                 result: assembly
             });
 
@@ -106,7 +107,7 @@ export default {
     
             res.json({
                 status: 'success',
-                msg: `Specie ${assembly.code} has been updated`,
+                msg: `Ensamble ${assembly.code} ha sido actualizado`,
 
             })
     
@@ -144,7 +145,7 @@ export default {
 
                 res.json({
                     status: 'success',
-                    msg: `Assembly ${assembly.code}  has been deleted`
+                    msg: `Ensamble ${assembly.code} ha sido eliminado`
                 })
             });
 
