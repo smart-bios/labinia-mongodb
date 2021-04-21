@@ -24,6 +24,7 @@
   "dependencies": {
     "babel-preset-env": "^1.7.0",
     "bcrypt": "^5.0.1",
+    "cloudinary": "^1.25.1",
     "connect-history-api-fallback": "^1.6.0",
     "cors": "^2.8.5",
     "csv-parser": "^3.0.0",

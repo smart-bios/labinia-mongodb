@@ -28,7 +28,7 @@ const geneSchema = new Schema({
         enum: ['mRNA', 'tRNA', 'rRNA', 'tmRNA','smallRNA']
     },
 
-    desc: {
+    description: {
         type: String
     }
 },{
